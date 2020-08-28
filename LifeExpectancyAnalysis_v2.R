@@ -178,3 +178,77 @@ fit_Oceania <- lm(`Life_expectancy` ~ `Adult_mortality` + `Infant_deaths`+ Alcoh
                     +Population+`Thinness_10_19_years`+`Thinness_5_9_years`+`Income_composition_of_resources`+Schooling,data=Life_2015_mean[which(Life_2015_mean$Continent=="Oceania"),])
 summary(fit_Oceania)
 #ALL 10 residuals are 0: no residual degrees of freedom!
+
+
+#Modeling
+
+Life <- read.csv("LifeExpectancyData.csv", header = TRUE, na.strings = "",check.names = FALSE)
+Life_2015<-subset(Life,Year ==2015)
+Country_metadata<-read.csv("Country_Continent.csv", header = TRUE, na.strings = "",check.names = FALSE)
+Life_2015<-merge(Life_2015, Country_metadata,by.x = "Country", by.y = "Country")
+Life_2014<-merge(Life_2014, Country_metadata,by.x = "Country", by.y = "Country")
+
+#Loading required packages
+install.packages('tidyverse')
+library(tidyverse)
+install.packages('ggplot2')
+library(ggplot2)
+install.packages('caret')
+library(caret)
+install.packages('caretEnsemble')
+library(caretEnsemble)
+install.packages('psych')
+library(psych)
+install.packages('Amelia')
+library(Amelia)
+install.packages('mice')
+library(mice)
+install.packages('GGally')
+library(GGally)
+install.packages('rpart')
+library(rpart)
+install.packages('randomForest')
+library(randomForest)
+install.packages('dplyr')
+library(dplyr)
+str(Life_2015)
+missmap(Life_2015)
+
+#Data Visualization
+factor(Life_2015$Status)
+as.numeric(Life_2015$Polio)
+na.omit(Life_2015$Polio)
+
+as.numeric(Life_2015$`Infant deaths`)
+
+as.numeric(Life_2015$BMI)
+na.omit(Life_2015$BMI)
+
+ggplot(Life_2015, aes(Polio, colour = Status)) +
+  geom_freqpoly(binwidth = 1) + labs(title="Age Distribution by Outcome")
+
+missmap(Life_2014)
+#Modeling
+library(e1071)
+library(caret)
+
+#Split Train and Test
+set.seed(2)
+id <- sample(2,nrow(Life_2015), prob = c(0.7, 0.3), replace =T)
+Life_2015_train<-Life_2015[id==1,]
+Life_2015_test<-Life_2015[id==2,]
+
+Status_factor<-factor(Life_2015$Status)
+
+str(Life_2015$Status_factor)
+is.factor(Life_2015$Status)
+factor(Life_2014$Status)
+status_nb<-naiveBayes(Life_2015$Status ~., Life_2015)
+
+
+Life_2014<-subset(Life,Year ==2014)
+predict(status_nb, Life_2014)
+confusionMatrix(table(status_predict, status_nb$Status))
+
+print(status_nb)
+
